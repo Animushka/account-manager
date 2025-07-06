@@ -1,33 +1,90 @@
-# account-manager
+# Account Manager
 
-This template should help get you started developing with Vue 3 in Vite.
+![Vue](https://img.shields.io/badge/Vue-3.3-green)
+![Vuetify](https://img.shields.io/badge/Vuetify-3.3-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
+![Pinia](https://img.shields.io/badge/Pinia-2.0-orange)
 
-## Recommended IDE Setup
+Система управления учетными записями с поддержкой LDAP и локальной аутентификации.
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## 📌 Основные возможности
 
-## Type Support for `.vue` Imports in TS
+- ✅ Создание учетных записей (LDAP/локальные)
+- ✅ Редактирование существующих записей
+- ✅ Удаление учетных записей
+- ✅ Валидация полей формы
+- ✅ Автоматическое сохранение состояния
+- ✅ Адаптивный интерфейс
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+## 🛠 Технологический стек
 
-## Customize configuration
+- **Frontend**:
+  - Vue 3 (Composition API)
+  - Vuetify 3 (UI компоненты)
+  - Pinia (состояние приложения)
+  - TypeScript
+  - Vite (сборка)
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+- **Дополнительно**:
+  - Vue Router
+  - Pinia Persisted State
 
-## Project Setup
+## 🚀 Быстрый старт
 
-```sh
-npm install
+1. Клонируйте репозиторий:
+   ```bash
+   git clone https://github.com/Animushka/account-manager
+   cd account-manager
+   ```
+
+2. Установите зависимости:
+   ```bash
+   npm install
+   ```
+
+3. Запустите сервер разработки:
+   ```bash
+   npm run dev
+   ```
+
+4. Для production-сборки:
+   ```bash
+   npm run build
+   ```
+
+## 🏗 Структура проекта
+
+```
+account-manager/
+├── src/
+│   ├── assets/
+│   ├── components/
+│   │   ├── AccountForm.vue
+│   │   └── AccountList.vue
+│   ├── stores/
+│   │   └── accountStore.ts
+│   ├── types/
+│   │   └── account.ts
+│   ├── views/
+│   │   └── HomeView.vue
+│   ├── App.vue
+│   └── main.ts
+├── public/
+├── package.json
+└── vite.config.ts
 ```
 
-### Compile and Hot-Reload for Development
+## 📝 Особенности реализации
 
-```sh
-npm run dev
-```
+1. **Типы учетных записей**:
+   - LDAP (без пароля)
+   - Локальные (с обязательным паролем)
 
-### Type-Check, Compile and Minify for Production
+2. **Валидация**:
+   - Логин: обязательное поле, макс. 100 символов
+   - Пароль: обязателен для локальных записей
+   - Метки: необязательные, макс. 50 символов
 
-```sh
-npm run build
-```
+3. **Сохранение состояния**:
+   - Данные сохраняются в localStorage
+   - Восстанавливаются при перезагрузке страницы
