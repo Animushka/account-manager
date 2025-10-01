@@ -1,6 +1,6 @@
 <template>
   <v-card flat class="mb-2 pa-2">
-    <v-form @submit.prevent class="d-flex align-center flex-wrap gap-4">
+    <v-form ref="formRef" @submit.prevent class="d-flex align-center flex-wrap gap-4">
       <!-- Метки -->
       <v-text-field
         v-model="localAccount.rawLabels"
@@ -20,7 +20,7 @@
       <!-- Тип записи -->
       <v-select
         v-model="localAccount.type"
-        :items="accountTypes"
+        :items="ACCOUNT_TYPES"
         item-title="title"
         item-value="value"
         label="Тип"
@@ -39,7 +39,8 @@
         density="compact"
         variant="outlined"
         color="primary"
-        :rules="[requiredRule]"
+        :rules="[loginRule]"
+        :error="!isLoginValid"
         @blur="handleBlur"
         style="width: 180px"
       />
@@ -54,7 +55,8 @@
         density="compact"
         variant="outlined"
         color="primary"
-        :rules="[requiredRule]"
+        :rules="[passwordRule]"
+        :error="!isPasswordValid"
         @blur="handleBlur"
         style="width: 180px"
         :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
@@ -73,7 +75,10 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import type { Account, AccountType } from '@/types/account'
+import type { Account } from '@/types/account'
+import type { AccountType } from '@/constants/accountTypes'
+import { useAccountValidation } from '@/composables/useAccountValidation'
+import { ACCOUNT_TYPES } from '@/constants/accountTypes'
 
 const props = defineProps<{
   account: Account
@@ -85,20 +90,22 @@ const emit = defineEmits<{
 }>()
 
 const showPassword = ref(false)
-
-const accountTypes = [
-  { title: 'LDAP', value: 'LDAP' },
-  { title: 'Локальная', value: 'Локальная' }
-]
-
-const requiredRule = (value: string) => !!value || 'Обязательное поле'
+const formRef = ref()
 
 const localAccount = computed({
   get: () => props.account,
   set: (value) => emit('update:account', value)
 })
 
-const handleBlur = () => {
+// Используем composable для валидации
+const { loginRule, passwordRule, isLoginValid, isPasswordValid } = useAccountValidation(localAccount)
+
+const handleBlur = async () => {
+  // Валидация формы
+  if (formRef.value) {
+    await formRef.value.validate()
+  }
+
   const labels = localAccount.value.rawLabels
     .split(';')
     .map(l => l.trim())
@@ -111,11 +118,16 @@ const handleBlur = () => {
   })
 }
 
-const handleTypeChange = (type: AccountType) => {
+const handleTypeChange = async (type: AccountType) => {
   emit('update:account', {
     ...localAccount.value,
     type,
     password: type === 'LDAP' ? null : ''
   })
+
+  // Перевалидация после изменения типа
+  if (formRef.value) {
+    await formRef.value.validate()
+  }
 }
 </script>

@@ -2,8 +2,12 @@ import { defineStore } from 'pinia'
 import { nanoid } from 'nanoid'
 import { ref } from 'vue'
 import type { Account } from '@/types/account'
+import { validateAccount } from '@/composables/useAccountValidation'
+import { ACCOUNT_TYPES } from '@/constants/accountTypes'
 
-export const useAccountStore = defineStore('accounts', () => {
+export const useAccountStore = defineStore(
+  'accounts',
+  () => {
   const accounts = ref<Account[]>([])
 
   // Добавление новой учетной записи
@@ -12,10 +16,9 @@ export const useAccountStore = defineStore('accounts', () => {
       id: nanoid(),
       rawLabels: '',
       labels: [],
-      type: 'Локальная',
+      type: ACCOUNT_TYPES[1].value,
       login: '',
-      password: '',
-      isValid: false
+      password: ''
     })
   }
 
@@ -26,57 +29,41 @@ export const useAccountStore = defineStore('accounts', () => {
 
   // Обновление учетной записи
   const updateAccount = (updatedAccount: Account) => {
-    const isValid = validateAccount(updatedAccount)
     const index = accounts.value.findIndex(a => a.id === updatedAccount.id)
 
     if (index === -1) return
 
-    // Обновляем только если валидна
-    if (isValid) {
-      accounts.value[index] = {
-        ...updatedAccount,
-        rawLabels: updatedAccount.rawLabels,
-        labels: updatedAccount.rawLabels
-          .split(';')
-          .filter(label => label.trim())
-          .map(label => ({ text: label.trim() })),
-        password: updatedAccount.type === 'LDAP' ? null : updatedAccount.password,
-        isValid: true
-      }
-    } else {
-      // Обновляем только флаг валидации — чтобы можно было показать ошибку
-      accounts.value[index].isValid = false
+    accounts.value[index] = {
+      ...updatedAccount,
+      rawLabels: updatedAccount.rawLabels,
+      labels: updatedAccount.rawLabels
+        .split(';')
+        .filter(label => label.trim())
+        .map(label => ({ text: label.trim() })),
+      password: updatedAccount.type === 'LDAP' ? null : updatedAccount.password
     }
-  }
-
-  // Валидация учетной записи
-  const validateAccount = (account: Account): boolean => {
-    return !!account.login.trim() &&
-      account.login.length <= 100 &&
-      (account.type !== 'Локальная' ||
-        (!!account.password && account.password.length <= 100)) &&
-      account.rawLabels.length <= 50
   }
 
   return {
     accounts,
     addAccount,
     deleteAccount,
-    updateAccount,
-    validateAccount
+    updateAccount
   }
-}, {
-  persist: {
-    key: 'account-storage',
-    storage: localStorage,
-    paths: ['accounts'],
-    serializer: {
-      serialize: (value) => {
-        // Сохраняем только валидные
-        const validAccounts = value.accounts.filter((a: Account) => a.isValid)
-        return JSON.stringify({ accounts: validAccounts })
-      },
-      deserialize: (value) => JSON.parse(value)
+  },
+  {
+    // @ts-ignore
+    persist: {
+      key: 'account-storage',
+      storage: localStorage,
+      serializer: {
+        serialize: (value: { accounts: Account[] }) => {
+          // Сохраняем только валидные записи
+          const validAccounts = value.accounts.filter((account) => validateAccount(account))
+          return JSON.stringify({ accounts: validAccounts })
+        },
+        deserialize: (value: string) => JSON.parse(value)
+      }
     }
   }
-})
+)
