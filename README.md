@@ -1,10 +1,5 @@
 # Account Manager
 
-![Vue](https://img.shields.io/badge/Vue-3.3-green)
-![Vuetify](https://img.shields.io/badge/Vuetify-3.3-blue)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
-![Pinia](https://img.shields.io/badge/Pinia-2.0-orange)
-
 Система управления учетными записями с поддержкой LDAP и локальной аутентификации.
 
 ## 📌 Основные возможности
@@ -27,7 +22,7 @@
 
 - **Дополнительно**:
   - Vue Router
-  - Pinia Persisted State
+  - Pinia Persisted State (localStorage)
 
 ## 🚀 Быстрый старт
 
@@ -57,16 +52,19 @@
 ```
 account-manager/
 ├── src/
-│   ├── assets/
 │   ├── components/
-│   │   ├── AccountForm.vue
-│   │   └── AccountList.vue
+│   │   ├── AccountForm.vue      # Форма редактирования записи
+│   │   └── AccountList.vue      # Список записей
+│   ├── composables/
+│   │   └── useAccountValidation.ts  # Логика валидации
+│   ├── constants/
+│   │   └── accountTypes.ts      # Типы аккаунтов (LDAP/Локальная)
+│   ├── router/
+│   │   └── index.ts             # Vue Router
 │   ├── stores/
-│   │   └── accountStore.ts
+│   │   └── accountStore.ts      # Pinia store с persistence
 │   ├── types/
-│   │   └── account.ts
-│   ├── views/
-│   │   └── HomeView.vue
+│   │   └── account.ts           # TypeScript интерфейсы
 │   ├── App.vue
 │   └── main.ts
 ├── public/
@@ -82,9 +80,16 @@ account-manager/
 
 2. **Валидация**:
    - Логин: обязательное поле, макс. 100 символов
-   - Пароль: обязателен для локальных записей
-   - Метки: необязательные, макс. 50 символов
+   - Пароль: обязателен для локальных записей, макс. 100 символов
+   - Метки: необязательные, макс. 50 символов, через `;`
+   - Красная обводка полей при ошибках
 
 3. **Сохранение состояния**:
-   - Данные сохраняются в localStorage
-   - Восстанавливаются при перезагрузке страницы
+   - Только валидные записи сохраняются в localStorage
+   - Автоматически восстанавливаются при перезагрузке страницы
+
+4. **Архитектура**:
+   - Composables для переиспользуемой логики валидации
+   - Константы для типов аккаунтов с автовыводом типов
+   - Чистое разделение ответственности (SoC)
+   - Единый источник истины для валидации
